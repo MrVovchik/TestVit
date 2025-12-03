@@ -1,0 +1,6 @@
+@TestVit_HostAddress = http://localhost:5165
+
+GET {{TestVit_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
