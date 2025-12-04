@@ -1,26 +1,42 @@
-Способы запуска
+## Способы запуска
 
-Общие шаги
+### Общие шаги
 
-1) Клонировать(fork) репозиторий git из visual studio.
+1.  **Клонировать (fork)** репозиторий **git** из **Visual Studio**.
+2.  Поднять базу данных **PostgreSQL**. Для конфигурации используйте файл `SQLDbScripst.txt`.
 
-2) Поднять базу данных PostgreSQL, для конфигурации используйте SQLDbScripst.txt
+---
 
-Способ 1:
-	Выберите(возле зеленой стрелочки запуска в режиме отладки) запуск http вместо Container (Dockerfile)
-	Ctrl + F5(Запуск без отладки)
-	Можно тестировать WebApi с помощью PostMan
+### Способ 1: Локальный запуск (без Docker)
 
-Способ 2:
-	Выберите(возле зеленой стрелочки запуска в режиме отладки) запуск Container (Dockerfile)
-	Ctrl + F5(Запуск без отладки), обратите внимание, вам понадобится Docker Desktop
-	Обратите внимание, visual studio использует любой свободный порт.
-	Можно тестировать WebApi с помощью PostMan
+* Выберите (возле зеленой стрелочки запуска в режиме отладки) запуск **http** вместо **Container (Dockerfile)**.
+* Нажмите **Ctrl + F5** (Запуск без отладки).
+* Можно тестировать **WebApi** с помощью **Postman**.
 
-Способ 3:
-	Вынести файл Dockerfile на одну директорию выше, в расположение .sln файла.
-	Из этой папки TestVit запустить cmd
-		docker build -t testvit .
-		Потом указываете строку подключения и номер порта в команде docker run, пример команды: 
-			docker run -d -p 8080:8080 -e ConnectionStrings__Default="Host=host.docker.internal;Port=5432;Database=blogvit;Username=postgres;Password=connectionpassword" --name testvit-container testvit
-	Можно тестировать WebApi с помощью PostMan
+---
+
+### Способ 2: Запуск в контейнере (Visual Studio + Docker Desktop)
+
+* Выберите (возле зеленой стрелочки запуска в режиме отладки) запуск **Container (Dockerfile)**.
+* Нажмите **Ctrl + F5** (Запуск без отладки). **Обратите внимание**, вам понадобится **Docker Desktop**.
+* **Обратите внимание**, Visual Studio использует любой свободный порт.
+* Можно тестировать **WebApi** с помощью **Postman**.
+
+---
+
+### Способ 3: Сборка и запуск через командную строку (Docker CLI)
+
+1.  Вынесите файл **Dockerfile** на одну директорию выше, в расположение **.sln** файла.
+2.  Из этой папки (`TestVit`) запустите **cmd** (командную строку).
+3.  **Сборка образа:**
+    ```bash
+    docker build -t testvit .
+    ```
+4.  **Запуск контейнера:**
+    * Укажите строку подключения и номер порта в команде `docker run`.
+    * **Пример команды:**
+        ```bash
+        docker run -d -p 8080:8080 -e ConnectionStrings__Default="Host=host.docker.internal;Port=5432;Database=blogvit;Username=postgres;Password=connectionpassword" --name testvit-container testvit
+        ```
+    **Примечание:** Параметр `Host=host.docker.internal` позволяет контейнеру получить доступ к сервисам, запущенным на хост-машине (например, к вашей локальной базе PostgreSQL).
+5.  Можно тестировать **WebApi** с помощью **Postman**.
