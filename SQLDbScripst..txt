@@ -1,0 +1,98 @@
+CREATE DATABASE blogvit
+    WITH
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'Russian_Russia.1251'
+    LC_CTYPE = 'Russian_Russia.1251'
+    LOCALE_PROVIDER = 'libc'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1
+    IS_TEMPLATE = False;
+
+CREATE TABLE IF NOT EXISTS public.users
+(
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    email text COLLATE pg_catalog."default" NOT NULL,
+    password_hash text COLLATE pg_catalog."default" NOT NULL,
+    display_name text COLLATE pg_catalog."default",
+    created_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT users_pkey PRIMARY KEY (id),
+    CONSTRAINT users_email_key UNIQUE (email)
+)
+
+CREATE TABLE IF NOT EXISTS public.tags
+(
+    id uuid NOT NULL,
+    name text COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT tags_pkey PRIMARY KEY (id),
+    CONSTRAINT tags_name_key UNIQUE (name)
+)
+
+CREATE TABLE IF NOT EXISTS public.sessions
+(
+    token uuid NOT NULL DEFAULT uuid_generate_v4(),
+    user_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    expires_at timestamp with time zone NOT NULL,
+    CONSTRAINT sessions_pkey PRIMARY KEY (token),
+    CONSTRAINT sessions_user_id_fkey FOREIGN KEY (user_id)
+        REFERENCES public.users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+)
+
+CREATE TABLE IF NOT EXISTS public.likes
+(
+    id uuid NOT NULL,
+    post_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT likes_pkey PRIMARY KEY (id)
+)
+
+CREATE TABLE IF NOT EXISTS public.comments
+(
+    id uuid NOT NULL,
+    post_id uuid NOT NULL,
+    author_id uuid NOT NULL,
+    text text COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT comments_pkey PRIMARY KEY (id)
+)
+
+CREATE TABLE IF NOT EXISTS public.blog_posts
+(
+    id uuid NOT NULL,
+    author_id uuid NOT NULL,
+    title text COLLATE pg_catalog."default" NOT NULL,
+    body text COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    CONSTRAINT blog_posts_pkey PRIMARY KEY (id)
+)
+
+CREATE TABLE IF NOT EXISTS public.blog_post_tags
+(
+    post_id uuid NOT NULL,
+    tag_id uuid NOT NULL,
+    CONSTRAINT blog_post_tags_pkey PRIMARY KEY (post_id, tag_id),
+    CONSTRAINT blog_post_tags_post_id_fkey FOREIGN KEY (post_id)
+        REFERENCES public.blog_posts (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT blog_post_tags_tag_id_fkey FOREIGN KEY (tag_id)
+        REFERENCES public.tags (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+)
+
+CREATE INDEX IF NOT EXISTS idx_blog_post_tags_post_id
+    ON public.blog_post_tags USING btree
+    (post_id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+CREATE INDEX IF NOT EXISTS idx_blog_post_tags_tag_id
+    ON public.blog_post_tags USING btree
+    (tag_id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
